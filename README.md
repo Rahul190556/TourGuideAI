@@ -68,5 +68,8 @@ git clone https://github.com/Rahul190556/TourGuideAI.git
 cd TourGuideAI
 
 
-[Tour Guide AI](https://www.loom.com/share/aa45931a44aa45cf9ceb031adbd9344d?sid=6f4ca45d-ea28-4660-81ab-2d52c65ff1ae)
+### Video
+https://github.com/user-attachments/assets/5e67a577-10b6-4c15-9814-9b4c1875b0d8
+
+
 
