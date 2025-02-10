@@ -61,6 +61,10 @@ To run this project locally, follow these steps:
   - **OpenStreetMap API** for fetching map data.
   - **Firebase** project credentials to connect Firebase to your app.
 
+### Video
+https://github.com/user-attachments/assets/5e67a577-10b6-4c15-9814-9b4c1875b0d8
+
+
 ### Clone the Repository
 
 ```bash
@@ -68,8 +72,7 @@ git clone https://github.com/Rahul190556/TourGuideAI.git
 cd TourGuideAI
 
 
-### Video
-https://github.com/user-attachments/assets/5e67a577-10b6-4c15-9814-9b4c1875b0d8
+
 
 
 
