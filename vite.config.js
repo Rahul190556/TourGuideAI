@@ -9,6 +9,9 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  optimizeDeps: {
+    include: ["isomorphic-fetch"]
+  },
   server: {
     proxy: {
       // Proxy all requests starting with /api to the Google Places API
