@@ -3,7 +3,7 @@
 // import viteLogo from '/vite.svg'
 import './App.css'
 import Hero from './components/custom/Hero';
-// import Header from './components/custom/Header';
+import Footer from './view-trip/components/Footer';
 
 
 function App() {
@@ -11,8 +11,8 @@ function App() {
 
   return (
     <>
-    {/* <Header/> */}
       <Hero/>
+      <Footer/>
     </>
   )
 }

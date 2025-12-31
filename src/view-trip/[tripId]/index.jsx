@@ -8,40 +8,92 @@ import Hotels from '../components/Hotels';
 import PlacesToVisit from '../components/PlacesToVisit';
 import Footer from '../components/Footer';
 
+// function ViewTrip() {
+//   const {tripId} = useParams();
+//   const [trip,setTrip] = useState([]);
+
+//   useEffect(()=>{
+//     tripId && GetTripData();
+
+//   },[tripId]);
+
+//   // Used to get information from firebase
+//   const GetTripData =async()=>{
+//     const docRef = doc(db,'AITrips',tripId);
+//     const docSnap = await getDoc(docRef);
+//     if(docSnap.exists()){
+//       // console.log("Document", docSnap.data());
+//       setTrip(docSnap.data());
+//     }
+//     else{
+//       // console.log("No Such Document");
+//       toast('No trip found!');
+//     }
+//   }
+//   return (
+//     <div className='p-10 md:px-20 lg:px-44 xl:px-56' >
+//       {/* Information Section */}
+//       <InfoSection trip = {trip}/>
+//       {/* Recommeded Hotels */}
+//       <Hotels trip = {trip}/>
+//       {/* Daily Plan */}
+//       <PlacesToVisit trip = {trip}/>
+//       {/* Footer */}
+//       <Footer trip = {trip}/>
+//       <div id="trip-pdf-content">
+//         <InfoSection trip={trip} />
+//         <PlacesToVisit trip={trip} />
+//         <Hotels trip={trip} />
+//       </div>
+
+//     </div>
+    
+//   )
+// }
+
+// export default ViewTrip;
+
+
 function ViewTrip() {
-  const {tripId} = useParams();
-  const [trip,setTrip] = useState([]);
+  const { tripId } = useParams();
+  const [trip, setTrip] = useState(null);
 
-  useEffect(()=>{
+  useEffect(() => {
     tripId && GetTripData();
+  }, [tripId]);
 
-  },[tripId]);
-
-  // Used to get information from firebase
-  const GetTripData =async()=>{
-    const docRef = doc(db,'AITrips',tripId);
+  const GetTripData = async () => {
+    const docRef = doc(db, "AITrips", tripId);
     const docSnap = await getDoc(docRef);
-    if(docSnap.exists()){
-      console.log("Document", docSnap.data());
+
+    if (docSnap.exists()) {
       setTrip(docSnap.data());
+    } else {
+      toast("No trip found!");
     }
-    else{
-      console.log("No Such Document");
-      toast('No trip found!');
-    }
-  }
+  };
+
+  if (!trip) return null;
+
   return (
-    <div className='p-10 md:px-20 lg:px-44 xl:px-56'>
-      {/* Information Section */}
-      <InfoSection trip = {trip}/>
-      {/* Recommeded Hotels */}
-      <Hotels trip = {trip}/>
-      {/* Daily Plan */}
-      <PlacesToVisit trip = {trip}/>
-      {/* Footer */}
-      <Footer trip = {trip}/>
-    </div>
-  )
+    <>
+    <div
+  id="trip-view"
+  className={`p-6 md:p-10 md:px-20 lg:px-44 xl:px-56 
+   `}
+>
+
+  <InfoSection trip={trip} />
+  <Hotels trip={trip} />
+  <PlacesToVisit trip={trip} />
+</div>
+
+
+
+   
+      <Footer />
+    </>
+  );
 }
 
 export default ViewTrip;

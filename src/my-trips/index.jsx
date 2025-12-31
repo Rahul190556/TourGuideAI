@@ -38,7 +38,7 @@ function Index() {
             try {
                 await deleteDoc(doc(db, 'AITrips', selectedTrip.id));
                 setUserTrips(prevTrips => prevTrips.filter(trip => trip.id !== selectedTrip.id));
-                console.log('Trip deleted successfully!');
+                // console.log('Trip deleted successfully!');
             } catch (error) {
                 console.error('Error deleting trip:', error);
             }

@@ -94,7 +94,7 @@ function CreateTrip() {
   };
 
   useEffect(() => {
-    console.log('Form data:', formData);
+    // console.log('Form data:', formData);
   }, [formData]);
 
   const login = useGoogleLogin({
@@ -117,6 +117,7 @@ const onGenerateTrip = async () => {
 
   setLoading(true);
 
+  // console.log("Form Data Submitted:", formData);
   const FINAL_PROMPT = AI_PROMPT
     .replace("{location}", formData?.location?.label || "")
     .replace("{totalDays}", formData?.days || "")
@@ -197,29 +198,40 @@ const saveAITrip = async (tripData) => {
     });
   };
 
-  // Handle location input change and suggestions
-  const handleInputChange = async (e) => {
-    const value = e.target.value;
-    setQuery(value);
+  let debounceTimer;
 
-    if (value.length > 2) {
-      try {
-        const response = await axios.get('https://api.locationiq.com/v1/autocomplete.php', {
+
+  const handleInputChange = (e) => {
+  const value = e.target.value;
+  setQuery(value);
+
+  if (debounceTimer) clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(async () => {
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        'https://api.locationiq.com/v1/autocomplete.php',
+        {
           params: {
-            key: 'pk.c51ba700c7aa3288f19b95fbaddbaeff',
+            key: import.meta.env.VITE_LOCATIONIQ_KEY,
             q: value,
-            limit: 100,
+            limit: 5,   
             dedupe: 1,
           },
-        });
-        setSuggestions(response.data);
-      } catch (error) {
-        console.error('Error fetching autocomplete suggestions:', error);
-      }
-    } else {
-      setSuggestions([]);
+        }
+      );
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error('Autocomplete error:', error?.response?.status);
     }
-  };
+  }, 800); // 800ms debounce
+};
+
 
   // Handle suggestion click
   const handleSuggestionClick = (suggestion) => {
@@ -248,31 +260,45 @@ const saveAITrip = async (tripData) => {
     handleData('traveler', item.people);
   };
 
-   return (
-    <div className="min-h-screen bg-gradient-to-b from-white-300 via-blue-100 to-white p-2 relative border-none">
-      <h2 className="font-bold text-3xl text-gray-800 text-center">Tell us your travel preferences🏕️🌴</h2>
-      <p className="mt-3 text-gray-500 text-xl text-center">
-        Just provide basic information, and our trip planner will generate a customized itinerary based on your preferences.
+  return (
+  <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-100 to-white px-4 py-8">
+    
+    {/* Header */}
+    <div className="text-center max-w-3xl mx-auto mb-14">
+      <h2 className="font-bold text-4xl text-gray-900 tracking-tight">
+        Tell us your travel preferences 🏕️🌴
+      </h2>
+      <p className="mt-4 text-gray-600 text-lg">
+        Just share a few details and we’ll craft a personalized, day-wise travel plan for you.
       </p>
-      
-      <div className="mt-10 sm:mt-16 md:mt-20 flex flex-col gap-9 px-5 md:px-10 lg:px-16">
+    </div>
+
+    {/* Main Card */}
+    <div className="max-w-6xl mx-auto bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-xl p-6 sm:p-10">
+
+      <div className="flex flex-col gap-12">
+
         {/* Destination */}
-        <div className="w-full md:w-1/2 lg:w-1/2 mx-auto">
-          <h2 className="text-xl my-3 font-medium">What is your destination of choice?</h2>
+        <div className="max-w-xl mx-auto w-full">
+          <h2 className="text-lg font-semibold mb-3 text-gray-800">
+            📍 Destination
+          </h2>
+
           <input
             type="text"
             value={query}
             onChange={handleInputChange}
-            placeholder="Enter a location"
-            className="w-full md:w-[80%] p-2 border border-gray-300 rounded"
+            placeholder="Enter city, state or country"
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-black outline-none transition"
           />
+
           {suggestions.length > 0 && (
-            <ul className="border border-gray-300 rounded mt-2 max-w-md mx-auto">
+            <ul className="mt-2 rounded-xl border border-gray-200 bg-white shadow-lg max-h-60 overflow-y-auto">
               {suggestions.map((suggestion) => (
                 <li
                   key={suggestion.place_id}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="p-2 cursor-pointer hover:bg-gray-200"
+                  className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 transition"
                 >
                   {suggestion.display_name}
                 </li>
@@ -280,95 +306,118 @@ const saveAITrip = async (tripData) => {
             </ul>
           )}
         </div>
-        
-        {/* Number of Days */}
-        <div className="w-full md:w-1/2 lg:w-1/2 mx-auto">
-          <h2 className="text-xl my-3 font-medium">How many days are you planning your trip?</h2>
+
+        {/* Days */}
+        <div className="max-w-xl mx-auto w-full">
+          <h2 className="text-lg font-semibold mb-3 text-gray-800">
+            🗓 Trip Duration
+          </h2>
+
           <input
             type="number"
             value={days}
             onChange={handleDaysChange}
-            placeholder="Ex. 3"
-            className="w-full md:w-[80%] p-2 border border-gray-300 rounded"
+            placeholder="e.g. 3 days"
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black focus:border-black outline-none transition"
           />
         </div>
-        
-        {/* Budget Selection */}
+
+        {/* Budget */}
         <div>
-          <h2 className="text-xl my-3 font-medium">What is Your Budget?</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5 justify-center">
+          <h2 className="text-lg font-semibold mb-5 text-gray-800 text-center">
+            💰 Select Your Budget
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {SelectBudgetOptions.map((item, index) => (
               <div
                 key={index}
                 onClick={() => handleBudgetClick(item)}
-                className={`p-2 border cursor-pointer rounded-lg text-center w-full sm:w-[80%] md:w-[60%] lg:w-80 transition-all duration-200
-                  ${selectedBudget === item.title ? 'shadow-xl border-2 border-black' : 'hover:shadow-lg border-gray-300'}`}
+                className={`w-full max-w-xs cursor-pointer rounded-2xl border p-5 text-center transition-all duration-300
+                ${
+                  selectedBudget === item.title
+                    ? "border-black shadow-2xl scale-[1.02]"
+                    : "border-gray-200 hover:shadow-lg hover:scale-[1.01]"
+                }`}
               >
-                <h2 className="text-2xl">{item.icons}</h2>
-                <h2 className="font-bold text-md">{item.title}</h2>
-                <h2 className="text-sm text-gray-500">{item.desc}</h2>
+                <div className="text-3xl mb-2">{item.icons}</div>
+                <h3 className="font-semibold text-lg">{item.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Traveler Selection */}
+        {/* Travelers */}
         <div>
-          <h2 className="text-xl my-3 font-medium">Who do you plan on traveling with on your next adventure?</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5 justify-center">
+          <h2 className="text-lg font-semibold mb-5 text-gray-800 text-center">
+            👥 Who are you traveling with?
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {selectTravelList.map((item, index) => (
               <div
                 key={index}
                 onClick={() => handleTravelerClick(item)}
-                className={`p-2 border cursor-pointer rounded-lg text-center w-full sm:w-[80%] md:w-[60%] lg:w-80 transition-all duration-200
-                  ${selectedTraveler === item.people ? 'shadow-xl border-2 border-black' : 'hover:shadow-lg border-gray-300'}`}
+                className={`w-full max-w-xs cursor-pointer rounded-2xl border p-5 text-center transition-all duration-300
+                ${
+                  selectedTraveler === item.people
+                    ? "border-black shadow-2xl scale-[1.02]"
+                    : "border-gray-200 hover:shadow-lg hover:scale-[1.01]"
+                }`}
               >
-                <h2 className="text-2xl">{item.icons}</h2>
-                <h2 className="font-bold text-lg">{item.title}</h2>
-                <h2 className="text-sm text-gray-500">{item.desc}</h2>
+                <div className="text-3xl mb-2">{item.icons}</div>
+                <h3 className="font-semibold text-lg">{item.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Generate Trip Button */}
-        <div className="my-10 justify-end flex">
+        {/* Generate Button */}
+        <div className="flex justify-center mt-8">
           <button
             disabled={loading}
-            className="bg-black text-white rounded px-4 py-2 mt-10 transition-all duration-200 hover:bg-blue-500"
             onClick={onGenerateTrip}
+            className="flex items-center gap-3 px-8 py-4 rounded-full bg-black text-white text-lg font-medium
+              hover:bg-gray-900 transition disabled:opacity-60"
           >
-            {loading ? <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin" /> : 'Generate Trip'}
+            {loading && <AiOutlineLoading3Quarters className="animate-spin" />}
+            Generate My Trip ✨
           </button>
         </div>
       </div>
-
-      {/* Dialog for Google login */}
-      <Dialog open={openDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogDescription>
-              <img
-                src={travelPlannerLogo}
-                className="w-1/4 h-auto mx-auto rounded-lg mb-5"
-                alt="logo"
-              />
-              <h2 className="font-bold text-lg mt-7">Sign In With Google</h2>
-              <p>Sign in to the App with Google authentication securely.</p>
-              <button
-                disabled={loading}
-                onClick={login}
-                className="w-full mt-5 flex gap-4 items-center justify-center p-3 bg-green-600 text-white rounded hover:bg-green-700 transition duration-300"
-              >
-                <FcGoogle className="h-7 w-7" />
-                Sign In With Google
-              </button>
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
     </div>
-  );
+
+    {/* Sign In Dialog */}
+    <Dialog open={openDialog}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogDescription className="text-center">
+            <img
+              src={travelPlannerLogo}
+              className="w-16 h-16 mx-auto mb-4 rounded-xl"
+              alt="logo"
+            />
+            <h2 className="font-semibold text-xl mb-2">Sign in with Google</h2>
+            <p className="text-gray-500 mb-6">
+              Login securely to save and manage your trips.
+            </p>
+            <button
+              disabled={loading}
+              onClick={login}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-black text-white hover:bg-gray-900 transition"
+            >
+              <FcGoogle className="h-6 w-6" />
+              Continue with Google
+            </button>
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  </div>
+);
+
 }
 
 export default CreateTrip;
